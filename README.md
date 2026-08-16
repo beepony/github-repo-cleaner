@@ -8,7 +8,7 @@ A pi skill that finds, reviews, and deletes GitHub repositories that match a set
 
 - 🔍 Lists every repository on the user's GitHub account.
 - 🎯 Filters by:
-  - **Keyword** in repo name or description (case-insensitive substring match). Example: `upyun`, `rails`.
+  - **Keyword** in repo name or description (case-insensitive substring match). Example: `legacy`, `archive`.
   - **Primary language** (case-sensitive, exactly as GitHub reports it). Example: `PHP`, `Ruby`, `Rust`.
 - 📋 Shows the matched set with name, language, description, and creation date.
 - ✋ **Requires explicit per-batch confirmation** before deleting anything.
@@ -19,7 +19,7 @@ A pi skill that finds, reviews, and deletes GitHub repositories that match a set
 ## Quick start
 
 1. Install the `pi` coding agent from <https://github.com/baryonlabs/pi-agent>.
-2. Install the [`ego-browser`](https://github.com/beepony/ego-browser) skill (or use the bundled `ego-browser` from your local skill directory).
+2. Install the `ego-browser` runtime. It ships with the [pi coding agent](https://github.com/baryonlabs/pi-agent) and lives at `~/.pi/skills/ego-browser` (or under `~/.agents/skills/ego-browser` on some setups). See [ego-browser's SKILL.md](https://github.com/baryonlabs/pi-agent/blob/main/skills/ego-browser/SKILL.md) for setup.
 3. Clone this repo into your skills folder:
 
 ```bash
@@ -32,7 +32,7 @@ git clone https://github.com/beepony/github-repo-cleaner.git ~/.pi/skills/github
 5. Invoke the skill from pi:
 
 ```
-帮我删除我 GitHub 仓库里面所有包含 "upyun" 的仓库
+帮我删除我 GitHub 仓库里面所有包含 "legacy" 的仓库
 ```
 
 The agent will:
@@ -50,8 +50,8 @@ Filters are passed in plain English. The agent interprets them as combinations o
 
 | Filter kind | Example       | Effect                                                                |
 |-------------|---------------|-----------------------------------------------------------------------|
-| Keyword     | `upyun`       | Match repos whose name or description contains `upyun`.               |
-| Keyword     | `rails`       | Match repos whose name or description contains `rails`.               |
+| Keyword     | `legacy`      | Match repos whose name or description contains `legacy`.              |
+| Keyword     | `archive`     | Match repos whose name or description contains `archive`.             |
 | Language    | `PHP`         | Match repos whose primary language is `PHP`.                          |
 | Language    | `Ruby`        | Match repos whose primary language is `Ruby`.                         |
 
@@ -59,9 +59,9 @@ Multiple keywords are OR-ed together; multiple languages are OR-ed together; dif
 
 Examples:
 
-- `delete all repos containing upyun` → keyword `upyun`.
+- `delete all repos containing legacy` → keyword `legacy`.
 - `删除我所有 PHP 仓库` → language `PHP`.
-- `delete repos containing upyun or ruby` → keywords `upyun`, `ruby`.
+- `delete repos containing legacy or sample` → keywords `legacy`, `sample`.
 - `删除所有 PHP 和 Ruby 仓库` → languages `PHP`, `Ruby`.
 
 You can also give an explicit keep-list (the agent will subtract it from the matched set):

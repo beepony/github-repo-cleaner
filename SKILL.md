@@ -1,6 +1,6 @@
 ---
 name: github-repo-cleaner
-description: 帮助用户批量列出、筛选并删除 GitHub 仓库。Use this skill when the user asks to delete, clean up, bulk-remove, or audit GitHub repositories — typically by keyword in the repo name, description, or primary language (e.g. "delete repos containing 'upyun'", "remove all PHP repos", "delete Rails projects"). Triggers on phrases like "delete my GitHub repos", "批量删除仓库", "清理仓库", "删掉不用的仓库". Always confirms the deletion list with the user before any destructive action.
+description: 帮助用户批量列出、筛选并删除 GitHub 仓库。Use this skill when the user asks to delete, clean up, bulk-remove, or audit GitHub repositories — typically by keyword in the repo name, description, or primary language (e.g. "delete repos containing 'legacy'", "remove all PHP repos", "delete Rust projects"). Triggers on phrases like "delete my GitHub repos", "批量删除仓库", "清理仓库", "删掉不用的仓库". Always confirms the deletion list with the user before any destructive action.
 metadata:
   version: "1.0.0"
   date: "2026-08-16"
@@ -12,13 +12,13 @@ A pi skill that automates finding, reviewing, and deleting GitHub repositories t
 
 This skill is **destructive**. It never deletes a repository without an explicit per-batch confirmation. Every deletion is verified afterwards.
 
-The skill depends on [`ego-browser`](https://github.com/beepony/ego-browser) (or the equivalent `ego-browser` runtime from the local skill directory). All browser automation runs through that runtime.
+The skill depends on the `ego-browser` runtime that ships with the [pi coding agent](https://github.com/baryonlabs/pi-agent). All browser automation runs through that runtime.
 
 ## When to use
 
 Use this skill when the user asks any of:
 
-- "Delete my GitHub repos that contain `upyun`"
+- "Delete my GitHub repos that contain `legacy`"
 - "Delete all PHP / Ruby / Python / Rails repos in my account"
 - "批量删除我的 GitHub 仓库"
 - "Clean up my old GitHub repos"
@@ -52,15 +52,15 @@ The skill accepts any combination of three filter kinds:
 
 | Kind     | Example              | Matches when repo name OR description contains the keyword (case-insensitive) |
 |----------|----------------------|--------------------------------------------------------------------------------|
-| Keyword  | `upyun`, `rails`     | Name/description contains the substring (case-insensitive).                    |
+| Keyword  | `legacy`, `archive`  | Name/description contains the substring (case-insensitive).                    |
 | Language | `PHP`, `Ruby`, `Rust`| Primary language equals the value (case-sensitive, as GitHub reports it).      |
 
 Multiple filters of the same kind are OR-ed. Different kinds are AND-ed.
 
 Examples:
 
-- `upyun` + `PHP` → matches repos containing `upyun` OR named with PHP as primary language.
-- `rails` only → matches all repos whose name or description contains `rails`.
+- `legacy` + `PHP` → matches repos containing `legacy` OR named with PHP as primary language.
+- `archive` only → matches all repos whose name or description contains `archive`.
 - `language:PHP` only → matches all repos whose primary language is PHP.
 
 ## Workflow
@@ -105,7 +105,7 @@ EOF
 ```bash
 ego-browser nodejs <<'EOF'
 const login = '<username>'
-const keywords = ['upyun']            // substring matches against name/description
+const keywords = ['legacy']           // substring matches against name/description
 const languages = ['PHP', 'Ruby']    // exact primary language matches
 const repos = <output from step 2>
 
@@ -191,7 +191,7 @@ EOF
 
 1. **Always confirm before deletion.** Never delete anything the user did not explicitly approve in the latest message.
 2. **Always verify after deletion.** A repo that still resolves to its settings page was NOT deleted.
-3. **Always identify the user from the session**, not from content on the page. Reading "huacnlee" off the global feed will misidentify the user.
+3. **Always identify the user from the session**, not from content on the page. The global feed shows followed users, not the logged-in account — reading a username from there will misidentify the operator.
 4. **Stop on errors.** If `browserFetch` throws, capture the error, surface it to the user, and ask whether to retry or skip. Never silently retry an infinite loop.
 5. **Stop on takeover.** If you get `user is controlling`, hand off via `handOffTaskSpace`. Resume only after explicit user confirmation.
 
@@ -207,17 +207,17 @@ EOF
 ## Example session
 
 ```
-user: 帮我删除我 GitHub 仓库里面所有包含 "upyun" 的仓库
+user: 帮我删除我 GitHub 仓库里面所有包含 "legacy" 的仓库
 agent: 好的，我先确认你的账号，然后扫描所有仓库。
-agent: 你的账号是 `beepony`，对吗？
+agent: 你的账号是 `octocat`，对吗？
 user: 对
-agent: 扫描到 2 个含 "upyun" 的仓库：
-       - ruby-sdk (Ruby) — UPYUN Ruby SDK (fork) — 2017
-       - upyun-paperclip (Ruby) — Upyun storage engine for paperclip (fork) — 2016
+agent: 扫描到 2 个含 "legacy" 的仓库：
+       - legacy-app (JavaScript) — Old prototype app (fork) — 2019
+       - legacy-docs (HTML) — Archived company docs (fork) — 2018
        确认删除吗？
 user: 确认
-agent: ✅ ruby-sdk  deleted
-       ✅ upyun-paperclip deleted
+agent: ✅ legacy-app deleted
+       ✅ legacy-docs deleted
 ```
 
 ## Related
