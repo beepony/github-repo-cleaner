@@ -46,6 +46,26 @@ cp -R /tmp/grc/.claude/skills/github-repo-cleaner ~/.claude/skills/
 rm -rf /tmp/grc
 ```
 
+**Codex CLI / 通用 shell**
+
+Codex 没有 skill 加载机制，但工作流本质就是 shell 命令。两种用法：
+
+1. **嵌入 `AGENTS.md`** —— 把 [`.claude/skills/github-repo-cleaner/SKILL.md`](./.claude/skills/github-repo-cleaner/SKILL.md) 里的 heredoc 模板复制到项目的 `AGENTS.md`。当你让 Codex 清理仓库时它会自动执行。
+
+2. **手动执行 heredoc** —— 把每个代码块粘贴到终端，或交给 `codex exec` / `codex --full-auto`：
+
+   ```bash
+   # 识别当前登录账号
+   ego-browser nodejs <<'EOF'
+   const task = await useOrCreateTaskSpace('github-repo-cleaner')
+   await openOrReuseTab('https://github.com', { wait: true })
+   const me = await js(String.raw`(()=>{const a=document.querySelector('meta[name=user-login]');return a?a.content:null})()`)
+   cliLog(JSON.stringify({ login: me }))
+   EOF
+   ```
+
+同样的方式适用于 Cursor、Cline、Continue、Aider —— 任何能执行 `ego-browser nodejs <<'EOF' ... EOF` 的 agent。
+
 ### 3. 发起请求
 
 ```

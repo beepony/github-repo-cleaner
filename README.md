@@ -46,6 +46,26 @@ cp -R /tmp/grc/.claude/skills/github-repo-cleaner ~/.claude/skills/
 rm -rf /tmp/grc
 ```
 
+**Codex CLI / generic shell**
+
+Codex has no skill loader, but the workflow is just shell. Two ways to use it:
+
+1. **Embed in `AGENTS.md`** — copy the heredoc templates from [`.claude/skills/github-repo-cleaner/SKILL.md`](./.claude/skills/github-repo-cleaner/SKILL.md) into your project's `AGENTS.md`. Codex will run them when you ask it to clean up repos.
+
+2. **Run heredocs manually** — paste each block from the skill file into your terminal, or hand them to `codex exec` / `codex --full-auto`:
+
+   ```bash
+   # identify the logged-in user
+   ego-browser nodejs <<'EOF'
+   const task = await useOrCreateTaskSpace('github-repo-cleaner')
+   await openOrReuseTab('https://github.com', { wait: true })
+   const me = await js(String.raw`(()=>{const a=document.querySelector('meta[name=user-login]');return a?a.content:null})()`)
+   cliLog(JSON.stringify({ login: me }))
+   EOF
+   ```
+
+The same approach works for Cursor, Cline, Continue, Aider — any agent that can execute `ego-browser nodejs <<'EOF' ... EOF`.
+
 ### 3. Ask
 
 ```
