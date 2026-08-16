@@ -1,6 +1,8 @@
 # github-repo-cleaner
 
-A pi skill that finds, reviews, and deletes GitHub repositories that match a set of user-defined rules — by keyword in the repo name or description, or by primary language.
+A skill that finds, reviews, and deletes GitHub repositories that match a set of user-defined rules — by keyword in the repo name or description, or by primary language.
+
+Works with the **pi coding agent** and **Claude Code** out of the box. The underlying workflow runs in any agent that can execute shell commands and reach the `ego-browser` runtime.
 
 > ⚠️ This is a destructive tool. It always shows the deletion list and asks for confirmation before deleting anything. Use with care.
 
@@ -16,33 +18,67 @@ A pi skill that finds, reviews, and deletes GitHub repositories that match a set
 - ✅ Verifies each deletion afterwards by re-checking the repo URL.
 - 🛑 Stops on errors and asks for guidance rather than silently retrying.
 
-## Quick start
+## Installation
 
-1. Install the `pi` coding agent from <https://github.com/baryonlabs/pi-agent>.
-2. Install the `ego-browser` runtime. It ships with the [pi coding agent](https://github.com/baryonlabs/pi-agent) and lives at `~/.pi/skills/ego-browser` (or under `~/.agents/skills/ego-browser` on some setups). See [ego-browser's SKILL.md](https://github.com/baryonlabs/pi-agent/blob/main/skills/ego-browser/SKILL.md) for setup.
-3. Clone this repo into your skills folder:
+Pick the agent you use. The same `ego-browser` runtime is required for all of them.
+
+### Prerequisite — install `ego-browser`
+
+```bash
+sh ~/.agents/skills/ego-browser/scripts/install.sh    # macOS only
+# after the script opens ego-browser, complete the in-app onboarding once
+command -v ego-browser                                # must print a path
+```
+
+On non-macOS, download from <https://lite.ego.app/> and complete onboarding so the `ego-browser` command is on `PATH`.
+
+Log into GitHub inside `ego-browser` before running any skill.
+
+### Option A — pi coding agent
 
 ```bash
 mkdir -p ~/.pi/skills
-git clone https://github.com/beepony/github-repo-cleaner.git ~/.pi/skills/github-repo-cleaner
+git clone https://github.com/beepony/github-repo-cleaner.git \
+            ~/.pi/skills/github-repo-cleaner
 ```
 
-4. Open `ego-browser` and log into GitHub.
-
-5. Invoke the skill from pi:
+Open pi. pi auto-loads the skill from `~/.pi/skills/` and triggers it whenever your request matches the description in `SKILL.md`. Just ask:
 
 ```
 帮我删除我 GitHub 仓库里面所有包含 "legacy" 的仓库
 ```
 
-The agent will:
+### Option B — Claude Code
 
-1. Confirm your GitHub username from the active session.
-2. Load every repo on your account.
-3. Filter by your criteria.
-4. Show you the matched set.
-5. Wait for your "确认删除" (or equivalent) confirmation.
-6. Delete each repo and verify the result.
+Copy the bundled Claude Code skill into your user-level skills folder:
+
+```bash
+mkdir -p ~/.claude/skills
+cp -R .claude/skills/github-repo-cleaner ~/.claude/skills/
+```
+
+Restart Claude Code. It picks up the skill automatically and triggers it when your request matches the description. Or invoke directly via the Skill tool:
+
+```
+/github-repo-cleaner delete all PHP repos
+```
+
+### Option C — Codex CLI / generic shell
+
+Codex has no skill loader, but the workflow is just shell. Copy the heredocs from `.claude/skills/github-repo-cleaner/SKILL.md` into a shell session and run them manually. Or:
+
+```bash
+git clone https://github.com/beepony/github-repo-cleaner.git
+cd github-repo-cleaner
+# read .claude/skills/github-repo-cleaner/SKILL.md for the workflow,
+# then paste each heredoc into your terminal
+```
+
+The same approach works for Cursor (Terminal tool), Cline, Continue, Aider — any agent that can run `ego-browser nodejs <<'EOF' ... EOF` blocks.
+
+### What runs the same regardless of agent
+
+The JavaScript heredocs in `.claude/skills/github-repo-cleaner/SKILL.md` and the original `SKILL.md` are identical. The only thing that differs between pi and Claude Code is the frontmatter and how the skill is loaded.
 
 ## Filter syntax
 
@@ -74,21 +110,28 @@ You can also give an explicit keep-list (the agent will subtract it from the mat
 
 ```
 github-repo-cleaner/
-├── README.md              # this file
-├── SKILL.md               # the pi skill entrypoint (frontmatter + workflow)
-├── LICENSE                # MIT
+├── README.md                                # this file
+├── SKILL.md                                 # pi skill entrypoint
+├── .claude/
+│   └── skills/
+│       └── github-repo-cleaner/
+│           └── SKILL.md                     # Claude Code skill entrypoint
+├── LICENSE                                  # MIT
 ├── scripts/
-│   └── delete-repos.js    # helper functions used inside the skill heredocs
+│   └── delete-repos.js                      # helper functions used inside the skill heredocs
 └── docs/
-    ├── architecture.md    # how the skill works under the hood
-    └── safety.md          # safety guarantees and limitations
+    ├── architecture.md                      # how the skill works under the hood
+    └── safety.md                            # safety guarantees and limitations
 ```
+
+The two `SKILL.md` files are kept manually in sync. Each one is self-contained so the host agent does not need to follow cross-file references.
 
 ## How it works
 
 For a deeper explanation of the workflow, see:
 
 - [`SKILL.md`](./SKILL.md) — the skill entrypoint that pi loads.
+- [`.claude/skills/github-repo-cleaner/SKILL.md`](./.claude/skills/github-repo-cleaner/SKILL.md) — the same workflow adapted for Claude Code.
 - [`docs/architecture.md`](./docs/architecture.md) — what each round of the heredoc does.
 - [`docs/safety.md`](./docs/safety.md) — what the skill guarantees and what it does not.
 
@@ -106,7 +149,7 @@ Issues and PRs welcome at <https://github.com/beepony/github-repo-cleaner>.
 
 When contributing, please:
 
-1. Keep the `SKILL.md` frontmatter in sync.
+1. Keep both `SKILL.md` files in sync. If you change the workflow, update both.
 2. Add a heredoc-friendly helper to `scripts/` rather than reimplementing deletion in inline scripts.
 3. Update `docs/architecture.md` if you change the workflow.
 
